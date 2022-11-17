@@ -14,9 +14,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool flashlight = false;
   bool isWorking = false;
   String result = "";
+  String asd = "";
   late CameraController cameraController;
   CameraImage? imgCamera;
 
@@ -29,7 +29,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    super.initState();
     loadMode();
     cameraController = CameraController(cameras[0], ResolutionPreset.high);
     cameraController.initialize().then((value) {
@@ -46,6 +45,7 @@ class _HomePageState extends State<HomePage> {
         },
       );
     });
+    super.initState();
   }
 
   runModelOnStreamFrames() async {
@@ -83,7 +83,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    String asd = "";
     setState(() {
       asd = result;
     });

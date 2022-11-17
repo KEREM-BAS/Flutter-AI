@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterai/screens/HomePage.dart';
 import 'package:flutterai/screens/SplashScreen.dart';
 
-late List<CameraDescription> cameras;
+List<CameraDescription> cameras = [];
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
