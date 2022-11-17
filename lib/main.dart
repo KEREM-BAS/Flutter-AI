@@ -2,6 +2,7 @@
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterai/screens/HomePage.dart';
 import 'package:flutterai/screens/SplashScreen.dart';
 
 late List<CameraDescription> cameras;
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter AI',
-      home: SplashScreen(),
+      home: HomePage(),
     );
   }
 }

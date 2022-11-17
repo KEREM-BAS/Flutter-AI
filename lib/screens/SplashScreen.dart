@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutterai/config/ThemeColor.dart';
 import 'package:flutterai/screens/HomePage.dart';
@@ -16,6 +18,7 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: color1,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: color1,
         onPressed: () {
           Navigator.push(
             context,
@@ -24,7 +27,13 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
           );
         },
-        label: Text("Let's Try"),
+        label: Text(
+          "Let's Try",
+          style: TextStyle(
+            fontSize: 30,
+            color: color3,
+          ),
+        ),
       ),
     );
   }
