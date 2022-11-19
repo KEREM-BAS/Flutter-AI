@@ -1,130 +1,136 @@
-// ignore_for_file: file_names
+// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors_in_immutables, library_private_types_in_public_api, file_names, unused_local_variable
 
-import 'package:camera/camera.dart';
+import 'package:animated_background/animated_background.dart';
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 import 'package:flutterai/config/ThemeColor.dart';
-import 'package:flutterai/main.dart';
 import 'package:tflite/tflite.dart';
+import 'dart:math' as math;
+
+import 'camera.dart';
+import 'bndbox.dart';
+import 'models.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({Key? key}) : super(key: key);
+  final List<CameraDescription> cameras;
+
+  HomePage(this.cameras);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  bool isWorking = false;
-  String result = "";
-  String asd = "";
-  late CameraController cameraController;
-  CameraImage? imgCamera;
-
-  loadMode() async {
-    await Tflite.loadModel(
-      model: "assets/tffile.tflite",
-      labels: "assets/tftext.txt",
-    );
-  }
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  List<dynamic>? _recognitions;
+  int _imageHeight = 0;
+  int _imageWidth = 0;
+  String _model = "";
 
   @override
   void initState() {
-    loadMode();
-    cameraController = CameraController(cameras[0], ResolutionPreset.high);
-    cameraController.initialize().then((value) {
-      if (!mounted) {
-        return;
-      }
-      cameraController.startImageStream(
-        (imageFromStream) {
-          if (!isWorking) {
-            isWorking = true;
-            imgCamera = imageFromStream;
-            runModelOnStreamFrames();
-          }
-        },
-      );
-    });
     super.initState();
   }
 
-  runModelOnStreamFrames() async {
-    if (imgCamera != null) {
-      var recognitions = await Tflite.runModelOnFrame(
-        bytesList: imgCamera!.planes.map((e) {
-          return e.bytes;
-        }).toList(),
-        imageHeight: imgCamera!.height,
-        imageWidth: imgCamera!.width,
-        numResults: 1,
-        threshold: 0.1,
-        asynch: true,
-        imageMean: 127.5,
-        imageStd: 127.5,
-        rotation: 90,
-      );
-      result = "";
-
-      setState(() {
-        for (var element in recognitions!) {
-          result += element["label"];
-        }
-        result;
-      });
+  loadModel() async {
+    String? res;
+    switch (_model) {
+      default:
+        res = await Tflite.loadModel(
+          model: "assets/yolov2_tiny.tflite",
+          labels: "assets/yolov2_tiny.txt",
+        );
+        break;
     }
+    print(res);
   }
 
-  @override
-  void dispose() async {
-    super.dispose();
-    await Tflite.close();
-    cameraController.dispose();
+  onSelect(model) {
+    setState(() {
+      _model = model;
+    });
+    loadModel();
+  }
+
+  setRecognitions(recognitions, imageHeight, imageWidth) {
+    setState(() {
+      _recognitions = recognitions;
+      _imageHeight = imageHeight;
+      _imageWidth = imageWidth;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    setState(() {
-      asd = result;
-    });
+    Size screen = MediaQuery.of(context).size;
     double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: Stack(
-        children: [
-          SizedBox(
-            height: height,
-            width: width,
-            child: CameraPreview(cameraController),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.end,
+      backgroundColor: color1,
+      body: _model == ""
+          ? AnimatedBackground(
+              vsync: this,
+              behaviour: RandomParticleBehaviour(
+                options: ParticleOptions(
+                  baseColor: color2,
+                  spawnMinSpeed: 10,
+                  spawnMaxSpeed: 50,
+                ),
+              ),
+              child: Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: FloatingActionButton.extended(
-                      backgroundColor: color1,
-                      onPressed: () {},
-                      label: Text(
-                        result,
-                        style: TextStyle(color: color3, fontSize: 35),
-                      ),
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 25),
+                          child: FloatingActionButton.extended(
+                            backgroundColor: color2,
+                            label: Text(
+                              "Let's Try",
+                              style: TextStyle(color: color3, fontSize: 30),
+                            ),
+                            onPressed: () => onSelect(yolo),
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(top: height / 8),
+                            child: Text(
+                              "Flutter AI",
+                              style: TextStyle(color: color3, fontSize: 50),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-          Center(
-            child: Text(
-              asd,
-              style: TextStyle(color: color4, fontSize: 30),
+            )
+          : Stack(
+              children: [
+                Camera(
+                  widget.cameras,
+                  _model,
+                  setRecognitions,
+                ),
+                BndBox(
+                    _recognitions ?? [],
+                    math.max(_imageHeight, _imageWidth),
+                    math.min(_imageHeight, _imageWidth),
+                    screen.height,
+                    screen.width,
+                    _model),
+              ],
             ),
-          )
-        ],
-      ),
     );
   }
 }

@@ -1,27 +1,30 @@
-// ignore_for_file: unused_element
+// ignore_for_file: unused_element, avoid_print, prefer_const_constructors
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterai/screens/HomePage.dart';
-import 'package:flutterai/screens/SplashScreen.dart';
 
-List<CameraDescription> cameras = [];
+List<CameraDescription>? cameras;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
-  runApp(const MyApp());
+  try {
+    cameras = await availableCameras();
+  } on CameraException catch (e) {
+    print('Error: $e.code\nError Message: $e.message');
+  }
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter AI',
-      home: HomePage(),
+      home: HomePage(cameras!),
     );
   }
 }
