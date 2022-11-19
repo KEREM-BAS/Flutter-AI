@@ -1,4 +1,4 @@
-# flutterai
+# FLUTTER AI
 
 A new Flutter project.
 
